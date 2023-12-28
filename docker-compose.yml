@@ -1,0 +1,30 @@
+services:
+  db:
+    image: postgres:15
+    ports:
+      - 5432:5432
+    volumes:
+      - ./init.sh:/docker-entrypoint-initdb.d/init.sh
+      - weather_data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_USER=${POSTGRES_ADMIN_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_ADMIN_PASSWORD}
+      - POSTGRES_CUSTOM_USER=${POSTGRES_CUSTOM_USER}
+      - POSTGRES_CUSTOM_PASSWORD=${POSTGRES_CUSTOM_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
+
+  app:
+    build: .
+    container_name: weather-container
+    command: uvicorn src.main:app --host 0.0.0.0 --port 80 --reload
+    ports:
+      - 80:80
+    volumes:
+      - .:/code
+    env_file:
+      - .env
+    depends_on:
+      - db
+
+volumes:
+  weather_data:
